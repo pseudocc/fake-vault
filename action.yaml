@@ -1,0 +1,57 @@
+name: Get Vault Secrets
+
+inputs:
+  vault:
+    description: Encoded string of the vault
+    required: true
+  secrets:
+    description: Newline-separated list of secrets to retrieve
+    required: true
+
+outputs:
+  secrets:
+    description: The retrieved secrets
+    value: ${{ steps.retrieve.outputs }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check Inputs
+      run: |
+        if [ -z "${{ inputs.vault }}" ]; then
+          echo "Vault input is required"
+          exit 1
+        fi
+        if [ -z "${{ inputs.secrets }}" ]; then
+          echo "Secrets input is required"
+          exit 1
+        fi
+        echo "Secrets to retrieve:"
+        IFS='\n' read -ra secrets <<< "${{ inputs.secrets }}"
+        for secret in "${secrets[@]}"; do
+          echo "- $secret"
+
+    - name: Install Dependencies
+      run: |
+        apt update
+        apt install -y squashfs-tools
+
+    - name: Decode Vault
+      run: |
+        echo "${{ inputs.vault }}" | base64 -d > vault.squashfs
+        unsquashfs -d vault vault.squashfs
+
+    - name: Get Secrets
+      id: retrieve
+      run: |
+        IFS='\n' read -ra secrets <<< "${{ inputs.secrets }}"
+        for packed in "${secrets[@]}"; do
+          secret=$(echo "$packed" | cut -d' ' -f1)
+          output_name=$(echo "$packed" | cut -d' ' -f2)
+          if [ -f "vault/$secret" ]; then
+            echo "$output_name=$(cat vault/$secret)" >> $GITHUB_OUTPUT
+          else
+            echo "Secret $secret not found in vault"
+            exit 1
+          fi
+        done
