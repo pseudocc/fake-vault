@@ -35,8 +35,8 @@ runs:
     - name: Install Dependencies
       shell: bash
       run: |
-        apt update
-        apt install -y squashfs-tools
+        sudo apt update
+        sudo apt install -y squashfs-tools
 
     - name: Decode Vault
       shell: bash
