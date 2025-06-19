@@ -17,6 +17,7 @@ runs:
   using: composite
   steps:
     - name: Check Inputs
+      shell: bash
       run: |
         if [ -z "${{ inputs.vault }}" ]; then
           echo "Vault input is required"
@@ -32,17 +33,20 @@ runs:
           echo "- $secret"
 
     - name: Install Dependencies
+      shell: bash
       run: |
         apt update
         apt install -y squashfs-tools
 
     - name: Decode Vault
+      shell: bash
       run: |
         echo "${{ inputs.vault }}" | base64 -d > vault.squashfs
         unsquashfs -d vault vault.squashfs
 
     - name: Get Secrets
       id: retrieve
+      shell: bash
       run: |
         IFS='\n' read -ra secrets <<< "${{ inputs.secrets }}"
         for packed in "${secrets[@]}"; do
