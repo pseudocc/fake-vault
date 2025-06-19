@@ -53,7 +53,11 @@ runs:
           secret=$(echo "$packed" | cut -d' ' -f1)
           output=$(echo "$packed" | cut -d' ' -f2)
           if [ -f "vault/$secret" ]; then
-            echo "$output=$(cat vault/$secret)" >> $GITHUB_OUTPUT
+            {
+              echo "$output<<EOF"
+              cat "vault/$secret"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
           else
             echo "Secret $secret not found in vault"
             exit 1
