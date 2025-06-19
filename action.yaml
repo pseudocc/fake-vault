@@ -49,6 +49,7 @@ runs:
       shell: bash
       run: |
         while IFS= read -r packed; do
+          [ -z "$packed" ] && continue
           secret=$(echo "$packed" | cut -d' ' -f1)
           output=$(echo "$packed" | cut -d' ' -f2)
           if [ -f "vault/$secret" ]; then
