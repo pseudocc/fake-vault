@@ -1,0 +1,24 @@
+on: [workflow_dispatch]
+
+jobs:
+  action-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: vault
+        uses: pseudocc/fake-vault@v1
+        with:
+          vault: ${{ secrets.ACTION_TEST_VAULT }}
+          secrets: |
+            gh/user gh_user
+            gh/repo gh_repo
+            ssh/fake.pub ssh_pub
+            ssh/fake ssh_priv
+
+      - name: Dump Vault
+        run: |
+          echo "gh/user: ${{ steps.vault.outputs.gh_user }}"
+          echo "gh/repo: ${{ steps.vault.outputs.gh_repo }}"
+          echo "ssh/fake.pub: ${{ steps.vault.outputs.ssh_pub }}"
+          echo "ssh/fake: ${{ steps.vault.outputs.ssh_priv }}"
